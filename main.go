@@ -59,7 +59,7 @@ func runKill(target string, force, dryRun bool) {
 		} else if !r.OK {
 			verb = "failed"
 		}
-		line := fmt.Sprintf("%s :%d pid %d (%s)", verb, l.Port, l.PID, firstNonEmpty(l.Project, l.Command))
+		line := fmt.Sprintf("%s :%d pid %d (%s)", verb, l.Port, l.PID, l.Command)
 		if r.Reason != "" {
 			line += " — " + r.Reason
 		}
@@ -75,7 +75,6 @@ func printTable(rows []Listener) {
 		{"PORT", func(l Listener) string { return strconv.Itoa(l.Port) }},
 		{"PID", func(l Listener) string { return strconv.Itoa(l.PID) }},
 		{"AGE", func(l Listener) string { return dash(l.Age) }},
-		{"PROJECT", func(l Listener) string { return dash(l.Project) }},
 		{"COMMAND", func(l Listener) string { return truncate(firstNonEmpty(l.Args, l.Command), 60) }},
 	}
 	widths := make([]int, len(cols))

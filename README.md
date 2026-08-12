@@ -9,8 +9,7 @@ never surprises you again.
 
 - Single Go binary. `go build` and go — light, no runtime deps.
 - macOS / Linux (uses `lsof`, falls back to `ss` / `netstat`).
-- Shows the **project** behind each port (from cwd's `package.json` / dir name)
-  and its **uptime**.
+- Shows each listening process and its **uptime**.
 - Long-lived (likely forgotten) processes are color-coded: yellow after 2h,
   red after 8h.
 - Kill the selected process with a confirmation step; `--dry-run` to preview.
@@ -54,14 +53,14 @@ onibi
 |-----|--------|
 | up/down or j/k | move selection |
 | enter | kill the selected process (asks to confirm) |
-| / | filter by port / project / command |
+| / | filter by port / command |
 | r | refresh now |
 | a | toggle auto-refresh (every 3s) |
 | f | toggle SIGKILL / SIGTERM |
 | q / Ctrl-C | quit |
 
 The panel under the list shows the selected process's address, pid, uptime,
-project, cwd, and full command line.
+cwd, and full command line.
 
 ### Headless
 

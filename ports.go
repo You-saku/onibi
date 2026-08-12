@@ -9,7 +9,6 @@ package main
 import (
 	"os"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"runtime"
 	"sort"
@@ -27,8 +26,7 @@ type Listener struct {
 	Command string `json:"command"` // short command name (e.g. "node")
 	Args    string `json:"args"`    // full command line, when available
 	Cwd     string `json:"cwd"`
-	Project string `json:"project"` // friendly label derived from Cwd
-	Age     string `json:"age"`     // elapsed time, e.g. "01:23" or "1-04:05:06"
+	Age     string `json:"age"` // elapsed time, e.g. "01:23" or "1-04:05:06"
 }
 
 var portSuffix = regexp.MustCompile(`:(\d+)$`)
@@ -162,11 +160,10 @@ func dedupe(rows []Listener) []Listener {
 	return out
 }
 
-// Enrich fills in cwd, project label, full args and uptime for each listener.
+// Enrich fills in cwd, full args and uptime for each listener.
 func Enrich(rows []Listener) []Listener {
 	for i := range rows {
 		rows[i].Cwd = pidCwd(rows[i].PID)
-		rows[i].Project = projectLabel(rows[i].Cwd)
 		if a := pidArgs(rows[i].PID); a != "" {
 			rows[i].Args = a
 		} else {
@@ -212,30 +209,6 @@ func pidAge(pid int) string {
 		return ""
 	}
 	return strings.TrimSpace(run("ps", "-p", strconv.Itoa(pid), "-o", "etime="))
-}
-
-// projectLabel prefers package.json "name", else the directory basename.
-func projectLabel(cwd string) string {
-	if cwd == "" {
-		return ""
-	}
-	if b, err := os.ReadFile(filepath.Join(cwd, "package.json")); err == nil {
-		if name := jsonName(string(b)); name != "" {
-			return name
-		}
-	}
-	return filepath.Base(cwd)
-}
-
-var nameRe = regexp.MustCompile(`"name"\s*:\s*"([^"]+)"`)
-
-// jsonName pulls the top-level "name" without a full JSON parse (keeps us
-// dependency-free). Returns "" if not found.
-func jsonName(s string) string {
-	if m := nameRe.FindStringSubmatch(s); m != nil {
-		return m[1]
-	}
-	return ""
 }
 
 // AgeSeconds converts an etime string ("1-04:05:06", "04:05", "05") to seconds,

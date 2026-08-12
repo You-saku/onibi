@@ -168,7 +168,7 @@ func (m *model) visible() []Listener {
 	q := strings.ToLower(m.filter)
 	var out []Listener
 	for _, r := range m.rows {
-		hay := strings.ToLower(strconv.Itoa(r.Port) + " " + strconv.Itoa(r.PID) + " " + r.Project + " " + r.Args)
+		hay := strings.ToLower(strconv.Itoa(r.Port) + " " + strconv.Itoa(r.PID) + " " + r.Args)
 		if strings.Contains(hay, q) {
 			out = append(out, r)
 		}
@@ -206,7 +206,7 @@ func (m *model) View() string {
 		b.WriteString(styYellow.Render(" filter: "+m.filter+caret) + "\n")
 	}
 
-	header := fmt.Sprintf(" %-6s %-8s %-11s %-18s %s", "PORT", "PID", "AGE", "PROJECT", "COMMAND")
+	header := fmt.Sprintf(" %-6s %-8s %-11s %s", "PORT", "PID", "AGE", "COMMAND")
 	b.WriteString(styDim.Render(header) + "\n")
 
 	list := m.visible()
@@ -214,20 +214,18 @@ func (m *model) View() string {
 		b.WriteString(styDim.Render(" no listening ports in sight") + "\n")
 	}
 	for i, r := range list {
-		maxCmd := m.width - 48
+		maxCmd := m.width - 29
 		if maxCmd < 10 {
 			maxCmd = 10
 		}
 		age := ageStyle(AgeSeconds(r.Age)).Render(fmt.Sprintf("%-11s", dash(r.Age)))
-		line := fmt.Sprintf(" %-6d %-8d %s %-18s %s",
+		line := fmt.Sprintf(" %-6d %-8d %s %s",
 			r.Port, r.PID, age,
-			truncate(dash(r.Project), 18),
 			truncate(firstNonEmpty(r.Args, r.Command), maxCmd),
 		)
 		if i == m.sel {
-			plain := fmt.Sprintf(" %-6d %-8d %-11s %-18s %s",
+			plain := fmt.Sprintf(" %-6d %-8d %-11s %s",
 				r.Port, r.PID, dash(r.Age),
-				truncate(dash(r.Project), 18),
 				truncate(firstNonEmpty(r.Args, r.Command), maxCmd))
 			b.WriteString(stySel.Render(plain) + "\n")
 		} else {
@@ -237,7 +235,7 @@ func (m *model) View() string {
 
 	// Kill confirmation modal.
 	if m.confirm != nil {
-		label := firstNonEmpty(m.confirm.Project, m.confirm.Command)
+		label := firstNonEmpty(m.confirm.Args, m.confirm.Command)
 		b.WriteString("\n" +
 			styRed.Render(fmt.Sprintf(" Kill :%d pid %d (%s) with %s?", m.confirm.Port, m.confirm.PID, label, sigName(m.force))) +
 			styDim.Render("  y / n") + "\n")
@@ -250,7 +248,6 @@ func (m *model) View() string {
 		b.WriteString(detailLine("address", fmt.Sprintf("%s:%d", dash(sel.Address), sel.Port)))
 		b.WriteString(detailLine("pid", strconv.Itoa(sel.PID)))
 		b.WriteString(detailLine("uptime", dash(sel.Age)))
-		b.WriteString(detailLine("project", dash(sel.Project)))
 		b.WriteString(detailLine("cwd", dash(sel.Cwd)))
 		b.WriteString(detailLine("command", dash(firstNonEmpty(sel.Args, sel.Command))))
 	}
